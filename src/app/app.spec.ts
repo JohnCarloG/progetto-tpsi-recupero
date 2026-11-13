@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, HttpErrorResponse } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -13,7 +13,7 @@ const first = {id: 1, userId: 1, title: 'Primo titolo', body: 'Testo del primo p
 describe('Bacheca post', () => {
   let http: HttpTestingController;
   beforeEach(() => {
-    TestBed.configureTestingModule({providers: [provideRouter(routes), provideHttpClient(), provideHttpClientTesting()]});
+    TestBed.configureTestingModule({providers: [provideRouter(routes, withComponentInputBinding()), provideHttpClient(), provideHttpClientTesting()]});
     http = TestBed.inject(HttpTestingController);
   });
   afterEach(() => http.verify());
@@ -110,4 +110,20 @@ describe('Bacheca post', () => {
     expect(list.service.posts()[0].title).toBe('Nuova idea');
     expect(list.title).toBe('');
   });
+  it('mantiene accessibili elenco e dettaglio todo del progetto originale', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/todos');
+    http.expectOne('https://jsonplaceholder.typicode.com/todos').flush([
+      {id: 1, userId: 1, title: 'Todo originale', completed: false},
+    ]);
+    harness.detectChanges();
+    expect(harness.routeNativeElement?.textContent).toContain('Todo originale');
+    await harness.navigateByUrl('/todos/1');
+    http.expectOne('https://jsonplaceholder.typicode.com/todos/1').flush(
+      {id: 1, userId: 1, title: 'Todo originale', completed: false},
+    );
+    harness.detectChanges();
+    expect(harness.routeNativeElement?.textContent).toContain('Todo originale');
+  });
+
 });

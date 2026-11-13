@@ -1,0 +1,33 @@
+<a routerLink="/todos">← Torna all'elenco</a>
+
+<h2>Todo #{{ numero() }}</h2>
+
+<nav class="navigazione">
+  <a
+    [routerLink]="['/todos', numero() - 1]"
+    [class.disabilitato]="!haPrecedente()"
+    [attr.aria-disabled]="!haPrecedente()"
+    >« Precedente</a
+  >
+  <a
+    [routerLink]="['/todos', numero() + 1]"
+    [class.disabilitato]="!haSuccessivo()"
+    [attr.aria-disabled]="!haSuccessivo()"
+    >Successivo »</a
+  >
+</nav>
+
+@if (service.loading()) {
+  <p class="loading">Caricamento…</p>
+} @else if (service.error(); as errore) {
+  <p class="errore">{{ errore }}</p>
+} @else if (service.selected(); as todo) {
+  <dl class="dettaglio">
+    <dt>Titolo</dt>
+    <dd>{{ todo.title }}</dd>
+    <dt>Utente</dt>
+    <dd>{{ todo.userId }}</dd>
+    <dt>Stato</dt>
+    <dd>{{ todo.completed ? 'Completato ✔' : 'Da fare' }}</dd>
+  </dl>
+}

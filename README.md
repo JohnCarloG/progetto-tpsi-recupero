@@ -55,3 +55,9 @@ Per preparare la spiegazione individuale, studiare il servizio e i signal,
 il filtro `computed`, il routing e `switchMap`, la gestione degli errori e i test.
 Concordare nel gruppo le modifiche da realizzare personalmente e committarle
 con messaggi che descrivano il contributo effettivo.
+
+## Integrazione con il lavoro esistente
+
+Il commit originale sui todo è conservato nella cronologia. Le sue pagine sono
+accessibili da `/todos` e `/todos/:id` e dal menu. La bacheca post è la pagina
+iniziale e il flusso coperto dalla suite descritta sopra.

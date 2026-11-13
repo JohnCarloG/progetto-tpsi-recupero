@@ -1,50 +1,27 @@
-<section class="intro">
-  <p class="eyebrow">LE COSE DA FARE</p>
-  <h1>Elenco todo</h1>
-</section>
+<h2>Elenco todo</h2>
 
-<section class="panel">
-  <h2>Cerca</h2>
-  <div class="filtri">
-    <input placeholder="Cerca nel titolo…" (input)="testo.set(leggi($event))" />
-    <select (change)="stato.set($any(leggi($event)))">
-      <option value="tutti">Tutti</option>
-      <option value="completati">Completati</option>
-      <option value="da-fare">Da fare</option>
-    </select>
-  </div>
-  <p class="conteggio">
-    Mostrati {{ filtrati().length }} su {{ service.todos().length }} · completati {{ completati() }}
-  </p>
+<p>
+  <input #nuovo placeholder="Nuovo todo" />
+  <button (click)="aggiungi(nuovo.value); nuovo.value = ''">Aggiungi</button>
+</p>
 
-  @if (service.loading()) {
-    <p role="status">Caricamento…</p>
-  }
-  @if (service.error(); as errore) {
-    <p class="error" role="alert">{{ errore }}</p>
-  }
-</section>
+<p>
+  <input placeholder="Cerca…" (input)="cerca.set($any($event.target).value)" />
+</p>
 
-<section class="panel">
-  <h2>Nuovo todo</h2>
-  <form class="nuovo" (submit)="$event.preventDefault(); aggiungi()">
-    <input
-      placeholder="Titolo del nuovo todo"
-      [value]="nuovoTitolo()"
-      (input)="nuovoTitolo.set(leggi($event))"
-    />
-    <button type="submit" [disabled]="!nuovoTitolo().trim() || service.loading()">Aggiungi</button>
-  </form>
-</section>
+<p>Mostrati {{ filtrati().length }} su {{ service.todos().length }} · completati {{ completati() }}</p>
 
-<ul class="panel lista">
-  @for (todo of filtrati(); track todo.id) {
+@if (service.loading()) {
+  <p>Caricamento…</p>
+}
+@if (service.error()) {
+  <p class="errore">{{ service.error() }}</p>
+}
+
+<ul>
+  @for (todo of filtrati(); track $index) {
     <li [class.fatto]="todo.completed">
-      <a [routerLink]="['/todos', todo.id]">#{{ todo.id }} {{ todo.title }}</a>
+      <a [routerLink]="['/todos', todo.id]">{{ todo.id }}. {{ todo.title }}</a>
     </li>
-  } @empty {
-    @if (!service.loading()) {
-      <li>Nessun todo trovato.</li>
-    }
   }
 </ul>

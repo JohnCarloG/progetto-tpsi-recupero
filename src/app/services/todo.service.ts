@@ -10,87 +10,65 @@ export interface Todo {
 
 @Injectable({ providedIn: 'root' })
 export class TodoService {
-  private readonly http = inject(HttpClient);
-  private readonly url = 'https://jsonplaceholder.typicode.com/todos';
+  private http = inject(HttpClient);
+  private url = 'https://jsonplaceholder.typicode.com/todos';
 
-  // Stato privato: solo il servizio può modificarlo
-  private readonly _todos = signal<Todo[]>([]);
-  private readonly _selected = signal<Todo | null>(null);
-  private readonly _loading = signal(false);
-  private readonly _error = signal<string | null>(null);
+  // Signal privati: solo il servizio li può modificare
+  private _todos = signal<Todo[]>([]);
+  private _todo = signal<Todo | null>(null);
+  private _loading = signal(false);
+  private _error = signal('');
 
-  // Stato pubblico in sola lettura per i componenti
-  readonly todos = this._todos.asReadonly();
-  readonly selected = this._selected.asReadonly();
-  readonly loading = this._loading.asReadonly();
-  readonly error = this._error.asReadonly();
+  // Versioni in sola lettura per i componenti
+  todos = this._todos.asReadonly();
+  todo = this._todo.asReadonly();
+  loading = this._loading.asReadonly();
+  error = this._error.asReadonly();
 
-  // JSONPlaceholder non salva i todo creati: li teniamo in memoria per poterli aprire
-  private readonly locali = new Map<number, Todo>();
-
-  /** GET /todos: legge l'elenco completo */
-  loadAll(): void {
+  // GET /todos
+  loadAll() {
     this._loading.set(true);
-    this._error.set(null);
+    this._error.set('');
     this.http.get<Todo[]>(this.url).subscribe({
       next: (todos) => {
         this._todos.set(todos);
         this._loading.set(false);
       },
-      error: (err: HttpErrorResponse) => this.handleError(err),
+      error: (err) => this.showError(err),
     });
   }
 
-  /** GET /todos/:id: legge un singolo elemento */
-  loadOne(id: number): void {
-    this._error.set(null);
-    const locale = this.locali.get(id);
-    if (locale) {
-      this._selected.set(locale);
-      return;
-    }
+  // GET /todos/:id
+  loadOne(id: number) {
     this._loading.set(true);
-    this._selected.set(null);
+    this._error.set('');
+    this._todo.set(null);
     this.http.get<Todo>(`${this.url}/${id}`).subscribe({
       next: (todo) => {
-        this._selected.set(todo);
+        this._todo.set(todo);
         this._loading.set(false);
       },
-      error: (err: HttpErrorResponse) => this.handleError(err),
+      error: (err) => this.showError(err),
     });
   }
 
-  /** POST /todos: crea un nuovo elemento e lo aggiunge in cima all'elenco */
-  create(title: string): void {
-    const nuovo = { userId: 1, title, completed: false };
-    this._loading.set(true);
-    this._error.set(null);
+  // POST /todos (JSONPlaceholder finge di salvare e risponde sempre con id 201)
+  create(title: string) {
+    const nuovo = { userId: 1, title: title, completed: false };
     this.http.post<Todo>(this.url, nuovo).subscribe({
-      next: (creato) => {
-        // JSONPlaceholder risponde sempre con id 201: calcoliamo un id libero
-        const id = Math.max(200, ...this._todos().map((t) => t.id)) + 1;
-        const todo = { ...creato, id };
-        this.locali.set(id, todo);
-        this._todos.update((lista) => [todo, ...lista]);
-        this._loading.set(false);
-      },
-      error: (err: HttpErrorResponse) => this.handleError(err),
+      next: (todo) => this._todos.update((lista) => [todo, ...lista]),
+      error: (err) => this.showError(err),
     });
   }
 
-  /** Cancella un errore rimasto da un'altra pagina */
-  clearError(): void {
-    this._error.set(null);
-  }
-
-  private handleError(err: HttpErrorResponse): void {
+  private showError(err: HttpErrorResponse) {
     this._loading.set(false);
     if (err.status === 404) {
-      this._error.set('Elemento inesistente (errore 404).');
+      this._error.set('Elemento inesistente (404)');
     } else if (err.status === 0) {
-      this._error.set('Rete assente: impossibile contattare il server.');
+      this._error.set('Rete assente: controlla la connessione');
     } else {
-      this._error.set(`Errore del server (${err.status}).`);
+      this._error.set('Errore del server (' + err.status + ')');
     }
   }
 }

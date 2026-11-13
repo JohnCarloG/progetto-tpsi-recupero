@@ -27,10 +27,13 @@ footer { text-align: center; padding: 2rem 1rem; color: #53635b; font-size: .85r
 @media (max-width: 500px) { header { align-items: flex-start; flex-direction: column; } .panel { padding: 1.1rem; } }
 
 header nav a { color: #fff; }
-.disabilitato { pointer-events: none; opacity: .45; }
-.errore { color: #9e2525; }
-.lista { padding-left: 1.25rem; }
-.lista li { padding: .5rem; }
-.fatto a { text-decoration: line-through; }
-.filtri, .navigazione { display: flex; gap: 1rem; margin: 1rem 0; }
+.filtri, .nuovo { display: flex; gap: 1rem; align-items: center; }
+.filtri select { padding: .8rem; border: 1px solid #9cb3a6; border-radius: 7px; font: inherit; background: #fff; }
+.nuovo button { margin-top: 0; white-space: nowrap; }
+.conteggio { color: #53635b; }
+.lista { list-style: none; }
+.lista li { padding: .5rem 0; border-bottom: 1px solid #edf1ed; }
+.lista li:last-child { border-bottom: 0; }
+.fatto a { text-decoration: line-through; color: #7a8a82; }
 .dettaglio dt { font-weight: 700; margin-top: 1rem; }
+.dettaglio dd { margin: 0; }

@@ -36,6 +36,8 @@ export class TodoList implements OnInit {
   ngOnInit(): void {
     if (this.service.todos().length === 0) {
       this.service.loadAll();
+    } else {
+      this.service.clearError();
     }
   }
 

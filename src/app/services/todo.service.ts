@@ -25,6 +25,9 @@ export class TodoService {
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
 
+  // JSONPlaceholder non salva i todo creati: li teniamo in memoria per poterli aprire
+  private readonly locali = new Map<number, Todo>();
+
   /** GET /todos: legge l'elenco completo */
   loadAll(): void {
     this._loading.set(true);
@@ -40,8 +43,13 @@ export class TodoService {
 
   /** GET /todos/:id: legge un singolo elemento */
   loadOne(id: number): void {
-    this._loading.set(true);
     this._error.set(null);
+    const locale = this.locali.get(id);
+    if (locale) {
+      this._selected.set(locale);
+      return;
+    }
+    this._loading.set(true);
     this._selected.set(null);
     this.http.get<Todo>(`${this.url}/${id}`).subscribe({
       next: (todo) => {
@@ -59,12 +67,20 @@ export class TodoService {
     this._error.set(null);
     this.http.post<Todo>(this.url, nuovo).subscribe({
       next: (creato) => {
-        // JSONPlaceholder non salva davvero: risponde sempre con id 201
-        this._todos.update((lista) => [creato, ...lista]);
+        // JSONPlaceholder risponde sempre con id 201: calcoliamo un id libero
+        const id = Math.max(200, ...this._todos().map((t) => t.id)) + 1;
+        const todo = { ...creato, id };
+        this.locali.set(id, todo);
+        this._todos.update((lista) => [todo, ...lista]);
         this._loading.set(false);
       },
       error: (err: HttpErrorResponse) => this.handleError(err),
     });
+  }
+
+  /** Cancella un errore rimasto da un'altra pagina */
+  clearError(): void {
+    this._error.set(null);
   }
 
   private handleError(err: HttpErrorResponse): void {

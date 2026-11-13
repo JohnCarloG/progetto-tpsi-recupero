@@ -1,33 +1,32 @@
 <a routerLink="/todos">← Torna all'elenco</a>
 
-<h2>Todo #{{ numero() }}</h2>
+<section class="panel detail">
+  <span class="badge">TODO #{{ numero() }}</span>
 
-<nav class="navigazione">
-  <a
-    [routerLink]="['/todos', numero() - 1]"
-    [class.disabilitato]="!haPrecedente()"
-    [attr.aria-disabled]="!haPrecedente()"
-    >« Precedente</a
-  >
-  <a
-    [routerLink]="['/todos', numero() + 1]"
-    [class.disabilitato]="!haSuccessivo()"
-    [attr.aria-disabled]="!haSuccessivo()"
-    >Successivo »</a
-  >
-</nav>
+  @if (service.loading()) {
+    <p role="status">Caricamento…</p>
+  } @else if (service.error(); as errore) {
+    <p class="error" role="alert">{{ errore }}</p>
+  } @else if (service.selected(); as todo) {
+    <h1>{{ todo.title }}</h1>
+    <dl class="dettaglio">
+      <dt>Utente</dt>
+      <dd>{{ todo.userId }}</dd>
+      <dt>Stato</dt>
+      <dd>{{ todo.completed ? 'Completato ✔' : 'Da fare' }}</dd>
+    </dl>
+  }
 
-@if (service.loading()) {
-  <p class="loading">Caricamento…</p>
-} @else if (service.error(); as errore) {
-  <p class="errore">{{ errore }}</p>
-} @else if (service.selected(); as todo) {
-  <dl class="dettaglio">
-    <dt>Titolo</dt>
-    <dd>{{ todo.title }}</dd>
-    <dt>Utente</dt>
-    <dd>{{ todo.userId }}</dd>
-    <dt>Stato</dt>
-    <dd>{{ todo.completed ? 'Completato ✔' : 'Da fare' }}</dd>
-  </dl>
-}
+  <nav aria-label="Navigazione todo">
+    @if (haPrecedente()) {
+      <a class="button" [routerLink]="['/todos', numero() - 1]">← Precedente</a>
+    } @else {
+      <span class="button disabled" aria-disabled="true">← Precedente</span>
+    }
+    @if (haSuccessivo()) {
+      <a class="button" [routerLink]="['/todos', numero() + 1]">Successivo →</a>
+    } @else {
+      <span class="button disabled" aria-disabled="true">Successivo →</span>
+    }
+  </nav>
+</section>
